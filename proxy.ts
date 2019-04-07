@@ -1,3 +1,4 @@
+require('dotenv').config(); // load .env file
 import { getNodeList, listen, Node, Action } from "./discovery";
 
 const host = process.env.HOST || "localhost";
