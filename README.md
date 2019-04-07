@@ -29,7 +29,7 @@ npx ts-node proxy.ts
 # Configuring Colyseus + PM2
 
 - Configure `RedisPresence`
-- Bind each instance of the server to a different port
+- Bind each instance of the server on a different port
 - Use PM2 to manage Colyseus instances
 
 ```typescript
@@ -48,7 +48,8 @@ gameServer.listen(PORT);
 console.log("Listening on", PORT);
 ```
 
-It's recommended to use PM2 to manage your server instances. PM2 allows to scale Node.js processes up and down within your server.
+It's recommended to use PM2 to manage your server instances. PM2 allows to scale
+Node.js processes up and down within your server.
 
 ```
 npm install -g pm2
@@ -84,7 +85,8 @@ pm2 start
 > If you're using TypeScript, compile your project before running `pm2 start`,
 > via `npx tsc`.
 
-You should see the following, depending on the amount of processes your server has:
+You should see the following output, depending on the amount of processes your
+server have:
 
 ```
 [PM2][WARN] Applications colyseus not running, starting...
