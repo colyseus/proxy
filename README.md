@@ -77,12 +77,12 @@ module.exports = {
 
 Now you're ready to start multiple Colyseus proceses.
 
-> If you're using TypeScript, compile your project before running `pm2 start`,
-> via `npx tsc`.
-
 ```
 pm2 start
 ```
+
+> If you're using TypeScript, compile your project before running `pm2 start`,
+> via `npx tsc`.
 
 You should see the following, depending on the amount of processes your server has:
 
