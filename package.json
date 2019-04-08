@@ -4,11 +4,13 @@
   "description": "Proxy and Service Discovery for Colyseus",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register test/*Test.ts"
+    "test": "mocha --require ts-node/register test/*Test.ts",
+    "prepublish": "tsc"
   },
   "bin": {
     "colyseus-proxy": "./bin/proxy"
   },
+  "files": ["bin", "*.js", "README.md", ".env"],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/colyseus/proxy.git"
