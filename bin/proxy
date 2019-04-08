@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require(__dirname + '/../lib/proxy.js');
+require(__dirname + '/../proxy.js');
