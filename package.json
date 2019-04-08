@@ -6,6 +6,9 @@
   "scripts": {
     "test": "mocha --require ts-node/register test/*Test.ts"
   },
+  "bin": {
+    "colyseus-proxy": "./bin/proxy"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/colyseus/proxy.git"
