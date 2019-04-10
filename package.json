@@ -1,6 +1,6 @@
 {
   "name": "@colyseus/proxy",
-  "version": "0.1.0",
+  "version": "0.10.0",
   "description": "Proxy and Service Discovery for Colyseus",
   "main": "lib/index.js",
   "scripts": {
