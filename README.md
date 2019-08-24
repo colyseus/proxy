@@ -29,11 +29,13 @@ npx ts-node proxy.ts
 # Configuring Colyseus + PM2
 
 - Configure `RedisPresence`
+- Configure `MongooseDriver`
 - Bind each instance of the server on a different port
 - Use PM2 to manage Colyseus instances
 
 ```typescript
 import { Server, RedisPresence } from "colyseus";
+import { MongooseDriver } from "colyseus/lib/matchmaker/drivers/MongooseDriver"
 
 // binds each instance of the server on a different port.
 const PORT = Number(process.env.PORT) + Number(process.env.NODE_APP_INSTANCE);
@@ -41,7 +43,8 @@ const PORT = Number(process.env.PORT) + Number(process.env.NODE_APP_INSTANCE);
 const gameServer = new Server({
     presence: new RedisPresence({
         url: "redis://127.0.0.1:6379/0"
-    })
+    }),
+    driver: new MongooseDriver(),
 })
 
 gameServer.listen(PORT);
