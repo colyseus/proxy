@@ -1,8 +1,8 @@
 {
   "name": "@colyseus/proxy",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Proxy and Service Discovery for Colyseus",
-  "main": "lib/index.js",
+  "main": "proxy.js",
   "scripts": {
     "test": "mocha --require ts-node/register test/*Test.ts",
     "prepublish": "tsc"
