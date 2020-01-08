@@ -2,9 +2,9 @@ const os = require('os');
 
 module.exports = {
   apps: [{
-    port: 8080,
+    port: 80,
     name: "proxy",
-    script: "./node_modules/@colyseus/proxy/bin/colyseus-proxy",
+    script: "./node_modules/@colyseus/proxy/bin/proxy",
     instances: os.cpus().length,
     exec_mode: 'fork',
     env: {
