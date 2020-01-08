@@ -1,6 +1,14 @@
 require('dotenv').config(); // load .env file
 import { getNodeList, listen, Node, Action } from "./discovery";
 
+const booleanString: {[k: string]: boolean} = {
+  // true
+  'true': true, 'yes': true, '1': true,
+
+  // false
+  'false': false, 'no': false, '0': false,
+}
+
 const host = process.env.HOST || "localhost";
 const processIds: {[id: string]: string} = {}
 
@@ -13,9 +21,7 @@ if (process.env.SSL_KEY) {
     port: process.env.SSL_PORT || 443,
     key: process.env.SSL_KEY,
     cert: process.env.SSL_CERT,
-    http2: (process.env.USE_HTTP2)
-      ? true
-      : false,
+    http2: booleanString[process.env.USE_HTTP2 || "false"]
   };
 }
 
