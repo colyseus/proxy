@@ -2,7 +2,7 @@
 
 Proxy and Service Discovery for Colyseus
 
-**Disclaimer**
+**NOTE**
 
 > At the moment the proxy is going to distribute the load equally between available servers via round-robin. Currently, there is no fancy distribution based on CPU load, number of spawned rooms, or anything like that.
 
