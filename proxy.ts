@@ -4,6 +4,24 @@ import { getNodeList, listen, Node, Action } from "./discovery";
 const host = process.env.HOST || "localhost";
 const processIds: {[id: string]: string} = {}
 
+/**
+ * SSL
+ */
+const additionalOptions: any = {};
+if (process.env.SSL_KEY) {
+  additionalOptions.ssl = {
+    port: process.env.SSL_PORT || 443,
+    key: process.env.SSL_KEY,
+    cert: process.env.SSL_CERT,
+    http2: (process.env.USE_HTTP2)
+      ? true
+      : false,
+  };
+}
+
+/**
+ * Initialize proxy
+ */
 const proxy = require('redbird')({
   port: Number(process.env.PORT || 80),
   resolvers: [function (host: string, url: string) {
@@ -11,7 +29,8 @@ const proxy = require('redbird')({
     if (matchedProcessId && matchedProcessId[1]) {
       return processIds[matchedProcessId[1]];
     }
-  }]
+  }],
+  ...additionalOptions
 });
 
 function register(node: Node) {

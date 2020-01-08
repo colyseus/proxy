@@ -1,6 +1,6 @@
 {
   "name": "@colyseus/proxy",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Proxy and Service Discovery for Colyseus",
   "main": "proxy.js",
   "scripts": {
@@ -10,7 +10,12 @@
   "bin": {
     "colyseus-proxy": "./bin/proxy"
   },
-  "files": ["bin", "*.js", "README.md", ".env"],
+  "files": [
+    "bin",
+    "*.js",
+    "README.md",
+    ".env"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/colyseus/proxy.git"
@@ -37,6 +42,6 @@
   "dependencies": {
     "dotenv": "^7.0.0",
     "ioredis": "^4.9.0",
-    "redbird": "^0.9.0"
+    "redbird": "^0.10.0"
   }
 }
