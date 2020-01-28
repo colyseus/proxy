@@ -1,58 +1,71 @@
-require('dotenv').config(); // load .env file
+import fs from "fs";
+import http from "http";
+import https from "https";
+import httpProxy from "http-proxy";
 import { getNodeList, listen, Node, Action } from "./discovery";
 
-const booleanString: {[k: string]: boolean} = {
-  // true
-  'true': true, 'yes': true, '1': true,
+const HTTPS_PORT = 443;
+const HTTP_PORT = Number(process.env.PORT || 80);
+const USE_SSL = (process.env.SSL_KEY && process.env.SSL_CERT);
 
-  // false
-  'false': false, 'no': false, '0': false,
+const processIds: { [id: string]: httpProxy } = {}
+
+let currProxy: number = 0;
+const proxies: httpProxy[] = [];
+
+function getProxy (url: string) {
+  let proxy: httpProxy | undefined;
+
+  /**
+   * Initialize proxy
+   */
+  const matchedProcessId = url.match(/\/([a-zA-Z0-9\-_]+)\/[a-zA-Z0-9\-_]+\?/);
+  if (matchedProcessId && matchedProcessId[1]) {
+    proxy = processIds[matchedProcessId[1]];
+    console.debug("Room is at proxy", proxies.indexOf(proxy));
+  }
+
+  if (proxy) {
+    return proxy;
+
+  } else {
+    currProxy = (currProxy + 1) % proxies.length;
+    console.debug("Using proxy", currProxy);
+    return proxies[currProxy];
+  }
 }
-
-const host = process.env.HOST || "localhost";
-const processIds: {[id: string]: string} = {}
-
-/**
- * SSL
- */
-const additionalOptions: any = {};
-if (process.env.SSL_KEY) {
-  additionalOptions.ssl = {
-    port: process.env.SSL_PORT || 443,
-    key: process.env.SSL_KEY,
-    cert: process.env.SSL_CERT,
-    http2: booleanString[process.env.USE_HTTP2 || "false"]
-  };
-}
-
-/**
- * Initialize proxy
- */
-const proxy = require('redbird')({
-  port: Number(process.env.PORT || 80),
-  resolvers: [function (host: string, url: string) {
-    const matchedProcessId = url.match(/\/([a-zA-Z0-9\-_]+)\/[a-zA-Z0-9\-_]+\?/);
-    if (matchedProcessId && matchedProcessId[1]) {
-      return processIds[matchedProcessId[1]];
-    }
-  }],
-  ...additionalOptions
-});
 
 function register(node: Node) {
-  const address = `http://${node.address}`;
-  processIds[node.processId] = address;
-  proxy.register(host, address);
+  const [host, port] = node.address!.split(":");
+
+  const proxy = httpProxy.createProxy({
+    target: { host, port },
+    ws: true
+  });
+
+  proxy.on("error", (err, req) => {
+    console.error(`Proxy error during: ${req.url}`);
+    console.error(err.stack);
+  });
+
+  processIds[node.processId] = proxy;
+  proxies.push(proxy);
+
+  currProxy = proxies.length - 1;
 }
 
 function unregister(node: Node) {
-  const address = processIds[node.processId];
+  const proxy = processIds[node.processId];
+
+  proxies.splice(proxies.indexOf(proxy), 1);
   delete processIds[node.processId];
-  proxy.unregister(host, address);
+
+  currProxy = proxies.length - 1;
 }
 
 // listen for node additions and removals through Redis
 listen((action: Action, node: Node) => {
+  console.debug("LISTEN", action, node);
   if (action === 'add') {
     register(node);
 
@@ -65,3 +78,57 @@ listen((action: Action, node: Node) => {
 getNodeList().
   then(nodes => nodes.forEach(node => register(node))).
   catch(err => console.error(err));
+
+const reqHandler = (req: http.IncomingMessage, res: http.ServerResponse) => {
+  const proxy = getProxy(req.url!);
+
+  if (proxy) {
+    proxy.web(req, res);
+
+  } else {
+    console.error("No proxy available!", processIds);
+  }
+};
+
+const server = (process.env.SSL_KEY && process.env.SSL_CERT)
+  // HTTPS
+  ? https.createServer({
+    key: fs.readFileSync(process.env.SSL_KEY, 'utf8'),
+    cert: fs.readFileSync(process.env.SSL_CERT, 'utf8'),
+  }, reqHandler)
+  // HTTP
+  : http.createServer(reqHandler);
+
+server.on('error', (err) => {
+  console.error(`Server error: ${err.stack}`);
+});
+
+server.on('upgrade', (req, socket, head) => {
+  const proxy = getProxy(req.url!);
+
+  if (proxy) {
+    proxy.ws(req, socket, head);
+
+  } else {
+    console.error("No proxy available!", processIds);
+  }
+});
+
+server.on('listening', () => console.debug("@colyseus/proxy listening at", server.address()?.toString()));
+
+/**
+ * Create HTTP -> HTTPS redirection server.
+ */
+if (server instanceof https.Server) {
+  server.listen(HTTPS_PORT);
+
+  const httpServer = http.createServer((req, res) => {
+    res.writeHead(301, { "Location": "https://" + req.headers['host']! + req.url });
+    res.end();
+  });
+  httpServer.on('listening', () => console.debug("@colyseus/proxy http -> https listening at", 80));
+  httpServer.listen(HTTP_PORT);
+
+} else {
+  server.listen(HTTP_PORT);
+}
