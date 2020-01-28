@@ -6,12 +6,14 @@ import { getNodeList, listen, Node, Action } from "./discovery";
 
 const HTTPS_PORT = 443;
 const HTTP_PORT = Number(process.env.PORT || 80);
-const USE_SSL = (process.env.SSL_KEY && process.env.SSL_CERT);
 
 const processIds: { [id: string]: httpProxy } = {}
 
 let currProxy: number = 0;
 const proxies: httpProxy[] = [];
+
+http.globalAgent = new http.Agent({ keepAlive: true });
+https.globalAgent = new https.Agent({ keepAlive: true });
 
 function getProxy (url: string) {
   let proxy: httpProxy | undefined;
@@ -22,15 +24,15 @@ function getProxy (url: string) {
   const matchedProcessId = url.match(/\/([a-zA-Z0-9\-_]+)\/[a-zA-Z0-9\-_]+\?/);
   if (matchedProcessId && matchedProcessId[1]) {
     proxy = processIds[matchedProcessId[1]];
-    console.debug("Room is at proxy", proxies.indexOf(proxy));
   }
 
   if (proxy) {
+    console.debug("Room is at proxy", proxies.indexOf(proxy));
     return proxy;
 
   } else {
     currProxy = (currProxy + 1) % proxies.length;
-    console.debug("Using proxy", currProxy);
+    console.debug("Using proxy", currProxy, url);
     return proxies[currProxy];
   }
 }
@@ -39,6 +41,7 @@ function register(node: Node) {
   const [host, port] = node.address!.split(":");
 
   const proxy = httpProxy.createProxy({
+    agent: http.globalAgent,
     target: { host, port },
     ws: true
   });
