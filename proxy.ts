@@ -6,6 +6,7 @@ import { getNodeList, listen, Node, Action } from "./discovery";
 
 const HTTPS_PORT = 443;
 const HTTP_PORT = Number(process.env.PORT || 80);
+const SOCKET_TIMEOUT = Number(process.env.SOCKET_TIMEOUT || 30000); // 30 seconds default socket timeout
 
 const processIds: { [id: string]: httpProxy } = {}
 
@@ -44,6 +45,18 @@ function register(node: Node) {
     agent: http.globalAgent,
     target: { host, port },
     ws: true
+  });
+
+  proxy.on('proxyReqWs', (proxyReq, req, socket, options, head) => {
+    /**
+     * Prevent stale socket connections / memory-leaks
+     */
+    socket.on('timeout', () => {
+      console.log("Socket timed out.");
+      socket.end();
+      socket.destroy();
+    });
+    socket.setTimeout(SOCKET_TIMEOUT);
   });
 
   proxy.on("error", (err, req) => {
@@ -117,7 +130,7 @@ server.on('upgrade', (req, socket, head) => {
   }
 });
 
-server.on('listening', () => console.debug("@colyseus/proxy listening at", server.address()?.toString()));
+server.on('listening', () => console.debug("@colyseus/proxy listening at", JSON.stringify(server.address())));
 
 /**
  * Create HTTP -> HTTPS redirection server.
