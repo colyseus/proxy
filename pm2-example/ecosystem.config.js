@@ -2,14 +2,12 @@ const os = require('os');
 
 module.exports = {
   apps: [{
-    port: 80,
     name: "proxy",
     script: "./node_modules/@colyseus/proxy/bin/proxy",
     instances: os.cpus().length,
     exec_mode: 'fork',
     env: {
       // Required options:
-      HOST: "example.com",
       REDIS_URL: "127.0.0.1:6379",
 
       // SSL (optional)
@@ -19,7 +17,6 @@ module.exports = {
 
       // Optional:
       PORT: 80,
-      USE_HTTP2: false,
     }
   }]
 }

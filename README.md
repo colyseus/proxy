@@ -22,7 +22,6 @@ npm install
 
 Edit the `.env` file to meet your needs:
 
-- `HOST` is your public domain name.
 - `PORT` is the port the proxy will be running on.
 - `REDIS_URL` is the path to the same Redis instance you're using on Colyseus' processes.
 
