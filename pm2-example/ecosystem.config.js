@@ -23,14 +23,12 @@ module.exports = {
      * Proxy process
      */
     {
-      port: 8000,
       name: 'proxy',
       script: './node_modules/@colyseus/proxy/bin/proxy',
       instances: 1, // os.cpus().length,
       exec_mode: 'fork',
       env: {
         // Required options:
-        // HOST: "staging.raftwars.io",
         REDIS_URL: process.env.REDIS_URL,
 
         // // SSL (optional)
