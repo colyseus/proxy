@@ -1,22 +1,42 @@
-const os = require('os');
+/* PM2 config file */
 
 module.exports = {
-  apps: [{
-    name: "proxy",
-    script: "./node_modules/@colyseus/proxy/bin/proxy",
-    instances: os.cpus().length,
-    exec_mode: 'fork',
-    env: {
-      // Required options:
-      REDIS_URL: "127.0.0.1:6379",
+  apps : [
+    /**
+     * Colyseus processes
+     */
+    {
+      name      : 'colyseus-app',
+      script    : 'index.ts',
+      exec_interpreter: "ts-node",
+      watch     : false,
+      instances : 3,
+      exec_mode : 'fork',
+      port      : 8080,
+      env: {
+        NODE_ENV: 'development',
+        DEBUG: 'colyseus:errors,colyseus:matchmaking'
+      },
+    },
 
-      // SSL (optional)
-      SSL_KEY: "/etc/certs/example.com/privkey.pem",
-      SSL_CERT: "/etc/certs/example.com/fullchain.pem",
-      SSL_PORT: 443,
+    /**
+     * Proxy process
+     */
+    {
+      port: 8000,
+      name: 'proxy',
+      script: './node_modules/@colyseus/proxy/bin/proxy',
+      instances: 1, // os.cpus().length,
+      exec_mode: 'fork',
+      env: {
+        // Required options:
+        // HOST: "staging.raftwars.io",
+        REDIS_URL: process.env.REDIS_URL,
 
-      // Optional:
-      PORT: 80,
-    }
-  }]
-}
+        // // SSL (optional)
+        // SSL_KEY: "/Users/endel/.localhost-ssl/localhost.key",
+        // SSL_CERT: "/Users/endel/.localhost-ssl/localhost.crt",
+      }
+    }],
+
+};
