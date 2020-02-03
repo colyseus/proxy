@@ -39,6 +39,9 @@ function getProxy (url: string) {
 }
 
 function register(node: Node) {
+  // skip if already registered
+  if (processIds[node.processId]) { return; }
+
   const [host, port] = node.address!.split(":");
 
   const proxy = httpProxy.createProxy({
