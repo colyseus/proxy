@@ -2,12 +2,6 @@
 
 Proxy and Service Discovery for Colyseus
 
-**NOTE**
-
-> At the moment the proxy is going to distribute the load equally between available servers via round-robin. Currently, there is no fancy distribution based on CPU load, number of spawned rooms, or anything like that.
-
-> So a "new room" request can end up being processed by a node that's already quite busy. I believe the current node discovery structure can evolve for a more mature/fancy way of distribution in the future.
-
 <img src="architecture.png?raw=true" alt="Architecture representation" />
 
 # Running the Proxy
