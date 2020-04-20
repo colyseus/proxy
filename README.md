@@ -4,6 +4,8 @@ Proxy and Service Discovery for Colyseus
 
 <img src="architecture.png?raw=true" alt="Architecture representation" />
 
+For a quickstart see [Configuring Proxy + Colyseus + PM2](#configuring-proxy--colyseus--pm2)
+
 # Running the Proxy
 
 Clone, this project and install its dependencies:
@@ -25,13 +27,19 @@ Start the proxy server:
 npx ts-node proxy.ts
 ```
 
-# Configuring Colyseus + PM2
-
+# Configuring Proxy + Colyseus + PM2
+- Install `@colyseus/proxy` globally
 - Configure `RedisPresence`
 - Configure `MongooseDriver`
 - Bind each instance of the server on a different port
-- Use PM2 to manage Colyseus instances
+- Use PM2 to manage Colyseus and Proxy instances
 
+Install `@colyseus/proxy globally`:
+```
+npm install -g @colyseus/proxy
+```
+
+Configure the colyseus application:
 ```typescript
 import { Server, RedisPresence } from "colyseus";
 import { MongooseDriver } from "colyseus/lib/matchmaker/drivers/MongooseDriver"
@@ -52,6 +60,7 @@ console.log("Listening on", PORT);
 
 It's recommended to use PM2 to manage your server instances. PM2 allows to scale
 Node.js processes up and down within your server.
+PM2 can also be used to manage and scale up the proxy instances.
 
 ```
 npm install -g pm2
@@ -63,18 +72,31 @@ Use the following `ecosystem.config.js` configuration:
 // ecosystem.config.js
 const os = require('os');
 module.exports = {
-    apps: [{
-        port        : 8080,
-        name        : "colyseus",
-        script      : "lib/index.js", // your entrypoint file
-        watch       : true,           // optional
-        instances   : os.cpus().length,
-        exec_mode   : 'fork',         // IMPORTANT: do not use cluster mode.
-        env: {
-            DEBUG: "colyseus:errors",
-            NODE_ENV: "production",
+    apps: [
+         {
+            port        : 80,
+            name        : "colyseus-proxy",
+            script      : "colyseus-proxy", // your entrypoint file
+            instances   : 1,  // scale this up if the proxy becomes the bottleneck
+            exec_mode   : 'cluster', 
+            env: {
+                PORT: 80,
+                REDIS_URL: "redis://127.0.0.1:6379/0"
+            }
+        },   
+        {
+            port        : 8080,
+            name        : "colyseus",
+            script      : "lib/index.js", // your entrypoint file
+            watch       : true,           // optional
+            instances   : os.cpus().length,
+            exec_mode   : 'fork',         // IMPORTANT: do not use cluster mode.
+            env: {
+                DEBUG: "colyseus:errors",
+                NODE_ENV: "production",
+            }
         }
-    }]
+    ]
 }
 ```
 
@@ -93,12 +115,13 @@ server have:
 ```
 [PM2][WARN] Applications colyseus not running, starting...
 [PM2] App [colyseus] launched (2 instances)
-┌──────────┬────┬──────┬────────┬───┬─────┬───────────┐
-│ Name     │ id │ mode │ status │ ↺ │ cpu │ memory    │
-├──────────┼────┼──────┼────────┼───┼─────┼───────────┤
-│ colyseus │ 0  │ fork │ online │ 0 │ 0%  │ 15.4 MB   │
-│ colyseus │ 1  │ fork │ online │ 0 │ 0%  │ 12.3 MB   │
-└──────────┴────┴──────┴────────┴───┴─────┴───────────┘
+┌──────────┬────┬─────────┬────────┬───┬─────┬───────────┐
+│ Name     │ id │ mode    │ status │ ↺ │ cpu │ memory    │
+├──────────┼────┼─────────┼────────┼───┼─────┼───────────┤
+│ proxy    │ 0  │ cluster │ online │ 0 │ 0%  │ 7.4 MB    │
+│ colyseus │ 1  │ fork    │ online │ 0 │ 0%  │ 15.4 MB   │
+│ colyseus │ 2  │ fork    │ online │ 0 │ 0%  │ 12.3 MB   │
+└──────────┴────┴─────────┴────────┴───┴─────┴───────────┘
 Use `pm2 show <id|name>` to get more details about an app
 ```
 
