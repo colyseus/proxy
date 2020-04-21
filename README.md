@@ -4,7 +4,25 @@ Proxy and Service Discovery for Colyseus
 
 <img src="architecture.png?raw=true" alt="Architecture representation" />
 
-# Running the Proxy
+# running the Proxy From Global Install
+The easiest way to get `@colyseus/proxy` running is to install it globally.
+
+This can be done by running:
+```
+npm install -g @colyseus/proxy
+```
+
+Edit your runtime environment to contain the following environment variables:
+
+- `PORT` is the port the proxy will be running on.
+- `REDIS_URL` is the path to the same Redis instance you're using on Colyseus' processes.
+
+Once installed it can be run with
+```
+colyseus-proxy
+```
+
+# Running the Proxy From Source
 
 Clone, this project and install its dependencies:
 
@@ -14,7 +32,7 @@ cd proxy
 npm install
 ```
 
-Edit the `.env` file to meet your needs:
+Edit your environment to contain the following environment variables:
 
 - `PORT` is the port the proxy will be running on.
 - `REDIS_URL` is the path to the same Redis instance you're using on Colyseus' processes.
