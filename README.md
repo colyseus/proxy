@@ -11,6 +11,7 @@ For a quickstart see [Configuring Proxy + Colyseus + PM2](#configuring-proxy--co
 The easiest way to get `@colyseus/proxy` running is to install it globally.
 
 This can be done by running:
+
 ```
 npm install -g @colyseus/proxy
 ```
@@ -21,6 +22,7 @@ Edit your runtime environment to contain the following environment variables:
 - `REDIS_URL` is the path to the same Redis instance you're using on Colyseus' processes.
 
 Once installed it can be run with
+
 ```
 colyseus-proxy
 ```
@@ -47,18 +49,15 @@ npx ts-node proxy.ts
 ```
 
 # Configuring Proxy + Colyseus + PM2
-- Install `@colyseus/proxy` globally
+
+- Install `@colyseus/proxy` (`npm install --save @colyseus/proxy`)
 - Configure `RedisPresence`
 - Configure `MongooseDriver`
 - Bind each instance of the server on a different port
 - Use PM2 to manage Colyseus and Proxy instances
 
-Install `@colyseus/proxy globally`:
-```
-npm install -g @colyseus/proxy
-```
-
 Configure the colyseus application:
+
 ```typescript
 import { Server, RedisPresence } from "colyseus";
 import { MongooseDriver } from "colyseus/lib/matchmaker/drivers/MongooseDriver"
@@ -95,14 +94,14 @@ module.exports = {
          {
             port        : 80,
             name        : "colyseus-proxy",
-            script      : "colyseus-proxy", // your entrypoint file
-            instances   : 1,  // scale this up if the proxy becomes the bottleneck
-            exec_mode   : 'cluster', 
+            script      : "./node_modules/@colyseus/proxy/bin/proxy",
+            instances   : 1, // scale this up if the proxy becomes the bottleneck
+            exec_mode   : 'cluster',
             env: {
                 PORT: 80,
                 REDIS_URL: "redis://127.0.0.1:6379/0"
             }
-        },   
+        },
         {
             port        : 8080,
             name        : "colyseus",
