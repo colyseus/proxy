@@ -6,6 +6,7 @@ import { getNodeList, listen, Node, Action } from "./discovery";
 
 const HTTPS_PORT = 443;
 const HTTP_PORT = Number(process.env.PORT || 80);
+const HTTP_IP = process.env.IP || '0.0.0.0';
 const SOCKET_TIMEOUT = Number(process.env.SOCKET_TIMEOUT || 30000); // 30 seconds default socket timeout
 
 const processIds: { [id: string]: httpProxy } = {}
@@ -139,15 +140,15 @@ server.on('listening', () => console.debug("@colyseus/proxy listening at", JSON.
  * Create HTTP -> HTTPS redirection server.
  */
 if (server instanceof https.Server) {
-  server.listen(HTTPS_PORT);
+  server.listen(HTTPS_PORT, HTTP_IP);
 
   const httpServer = http.createServer((req, res) => {
     res.writeHead(301, { "Location": "https://" + req.headers['host']! + req.url });
     res.end();
   });
   httpServer.on('listening', () => console.debug("@colyseus/proxy http -> https listening at", 80));
-  httpServer.listen(HTTP_PORT);
+  httpServer.listen(HTTP_PORT, HTTP_IP);
 
 } else {
-  server.listen(HTTP_PORT);
+  server.listen(HTTP_PORT, HTTP_IP);
 }
