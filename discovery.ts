@@ -2,6 +2,7 @@ import Redis from "ioredis";
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const NODES_SET = "colyseus:nodes";
+const ROOM_COUNT_KEY = "roomcount";
 const DISCOVERY_CHANNEL = "colyseus:nodes:discovery";
 
 const redis = new Redis(REDIS_URL);
@@ -30,4 +31,10 @@ export function listen(cb: (action: Action, node: Node) => void) {
         const [action, data] = JSON.parse(message).split(",");
         cb(action, parseNode(data));
     });
+}
+
+export async function cleanUpNode(node: Node) {
+    const nodeAddress = `${node.processId}/${node.address}`;
+    await redis.srem(NODES_SET, nodeAddress);
+    await redis.hdel(ROOM_COUNT_KEY, node.processId);
 }

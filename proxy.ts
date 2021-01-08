@@ -2,7 +2,7 @@ import fs from "fs";
 import http from "http";
 import https from "https";
 import httpProxy from "http-proxy";
-import { getNodeList, listen, Node, Action } from "./discovery";
+import { getNodeList, listen, Node, Action, cleanUpNode } from "./discovery";
 
 const HTTPS_PORT = 443;
 const HTTP_PORT = Number(process.env.PORT || 80);
@@ -63,9 +63,15 @@ function register(node: Node) {
     socket.setTimeout(SOCKET_TIMEOUT);
   });
 
-  proxy.on("error", (err, req) => {
+  proxy.on("error", (err, req, res) => {
     console.error(`Proxy error during: ${req.url}`);
     console.error(err.stack);
+
+    console.warn(`node ${node.processId}/${node.address} failed, unregistering`);
+    unregister(node);
+    cleanUpNode(node).then(() => console.log(`cleaned up ${node.processId} presence`));
+
+    reqHandler(req, res); // try again!
   });
 
   processIds[node.processId] = proxy;
@@ -107,6 +113,8 @@ const reqHandler = (req: http.IncomingMessage, res: http.ServerResponse) => {
 
   } else {
     console.error("No proxy available!", processIds);
+    res.statusCode = 503;
+    res.end();
   }
 };
 
