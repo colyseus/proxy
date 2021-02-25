@@ -1,3 +1,4 @@
+import http from "http";
 import { Room, Client, Delayed, matchMaker } from "colyseus";
 
 interface MatchmakingGroup {
@@ -79,10 +80,26 @@ export class RankedLobbyRoom extends Room {
       this.numClientsToMatch = options.numClientsToMatch;
     }
 
+    this.onMessage("confirm", (client: Client, message: any) => {
+      const stat = this.stats.find(stat => stat.client === client);
+
+      if (stat && stat.group && typeof (stat.group.confirmed) === "number") {
+        stat.confirmed = true;
+        stat.group.confirmed++;
+        stat.client.leave();
+      }
+    })
+
     /**
      * Redistribute clients into groups at every interval
      */
     this.setSimulationInterval(() => this.redistributeGroups(), this.evaluateGroupsInterval);
+  }
+
+  onAuth(client: Client, options: any, request: http.IncomingMessage) {
+    const ip = request.headers['x-forwarded-for'] || request.connection.remoteAddress;
+    console.log({ip});
+    return true;
   }
 
   onJoin(client: Client, options: any) {
@@ -93,31 +110,7 @@ export class RankedLobbyRoom extends Room {
       options
     });
 
-    this.send(client, 1);
-  }
-
-  onMessage(client: Client, message: any) {
-    if (message === 1) {
-      const stat = this.stats.find(stat => stat.client === client);
-
-      if (stat && stat.group && typeof(stat.group.confirmed) === "number") {
-        stat.confirmed = true;
-        stat.group.confirmed++;
-        setTimeout(() => {
-          throw new Error("WHAHHUASEUIHA");
-        }, 1000);
-
-        client.terminate();
-
-        /**
-         * All clients confirmed, let's disconnect them!
-        if (stat.group.confirmed === stat.group.clients.length) {
-          // stat.group.cancelConfirmationTimeout!.clear();
-          stat.group.clients.forEach(client => client.client.close());
-        }
-         */
-      }
-    }
+    client.send("clients", 1);
   }
 
   createGroup() {
@@ -146,22 +139,10 @@ export class RankedLobbyRoom extends Room {
         continue;
       }
 
-      if (currentGroup.clients.length === this.numClientsToMatch) {
-        currentGroup = this.createGroup();
-        totalRank = 0;
-      }
-
-      /**
-       * Match long-waiting clients with bots
-       * FIXME: peers of this group may be entered short ago
-       */
-      if (stat.waitingTime >= this.maxWaitingTime && this.allowUnmatchedGroups) {
-        currentGroup.ready = true;
-
       /**
        * Force this client to join a group, even if rank is incompatible
        */
-      } else if (
+      if (
         this.maxWaitingTimeForPriority !== undefined &&
         stat.waitingTime >= this.maxWaitingTimeForPriority
       ) {
@@ -189,8 +170,21 @@ export class RankedLobbyRoom extends Room {
       currentGroup.clients.push(stat);
 
       totalRank += stat.rank;
-
       currentGroup.averageRank = totalRank / currentGroup.clients.length;
+
+      if (
+        (currentGroup.clients.length === this.numClientsToMatch) ||
+
+        /**
+         * Match long-waiting clients with bots
+         * FIXME: peers of this group may be entered short ago
+         */
+        (stat.waitingTime >= this.maxWaitingTime && this.allowUnmatchedGroups)
+      ) {
+        currentGroup.ready = true;
+        currentGroup = this.createGroup();
+        totalRank = 0;
+      }
     }
 
     this.checkGroupsReady();
@@ -200,8 +194,7 @@ export class RankedLobbyRoom extends Room {
     await Promise.all(
       this.groups
         .map(async (group) => {
-          if (group.ready || group.clients.length === this.numClientsToMatch) {
-            group.ready = true;
+          if (group.ready) {
             group.confirmed = 0;
 
             /**
@@ -215,7 +208,7 @@ export class RankedLobbyRoom extends Room {
               /**
                * Send room data for new WebSocket connection!
                */
-              this.send(client.client, matchData);
+              client.client.send("seat", matchData);
             }));
 
             // /**
@@ -233,7 +226,9 @@ export class RankedLobbyRoom extends Room {
             /**
              * Notify all clients within the group on how many players are in the queue
              */
-            group.clients.forEach(client => this.send(client.client, group.clients.length));
+            group.clients.forEach(client => {
+              client.client.send("clients", group.clients.length);
+            });
           }
         })
     );

@@ -1,8 +1,7 @@
 import { Client, Room } from "colyseus.js";
 
-// const client = new Client("wss://localhost");
-const client = new Client("ws://localhost:8000");
-// const client = new Client("ws://testing.raftwars.io");
+const client = new Client("ws://localhost");
+// const client = new Client("ws://localhost:8000");
 const connections: Room[] = [];
 
 const numClientsToMatch = 4;
@@ -12,23 +11,22 @@ async function joinRanked() {
 
   ranked.onLeave(() => console.log("left matchmaking"));
 
-  ranked.onMessage((message) => {
-    if (typeof(message)==="number") {
-      console.log(message + "/" + numClientsToMatch);
+  ranked.onMessage("clients", (clients) => {
+    console.log(clients + "/" + numClientsToMatch);
+  });
 
-    } else {
-      console.log("let's consume seat reservation!");
+  ranked.onMessage("seat", (message) => {
+    console.log("let's consume seat reservation!");
 
-      client.consumeSeatReservation(message).then((room) => {
-        console.log("client joined!");
-        ranked.send(1);
-        room.onLeave(() => {
-          connections.splice(connections.indexOf(room), 1);
-          console.log("client left!");
-        });
-        connections.push(room);
+    client.consumeSeatReservation(message).then((room) => {
+      console.log("client joined!");
+      ranked.send("confirm");
+      room.onLeave(() => {
+        connections.splice(connections.indexOf(room), 1);
+        console.log("client left!");
       });
-    }
+      connections.push(room);
+    });
   });
 
   return ranked;

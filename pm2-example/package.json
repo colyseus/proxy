@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "start": "pm2 startOrRestart ecosystem.config.js",
+    "stop": "pm2 delete all",
     "loadtest": "colyseus-loadtest loadtest/example.ts --endpoint ws://localhost:8000 --room my_room --numClients 30",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,7 +16,7 @@
   },
   "homepage": "https://github.com/colyseus/create-colyseus#readme",
   "devDependencies": {
-    "@colyseus/loadtest": "^0.12.0",
+    "@colyseus/loadtest": "^0.14.0",
     "@types/cors": "^2.8.6",
     "@types/express": "^4.17.1",
     "pm2": "^4.2.3",
@@ -23,10 +24,9 @@
     "typescript": "^3.4.5"
   },
   "dependencies": {
-    "@colyseus/monitor": "^0.11.0",
-    "@colyseus/proxy": "^0.12.1",
-    "@colyseus/social": "^0.10.2",
-    "colyseus": "^0.12.1-alpha.0",
+    "@colyseus/monitor": "^0.14.0",
+    "@colyseus/proxy": "^0.12.3",
+    "colyseus": "^0.14.0",
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "express-jwt": "^5.3.1",

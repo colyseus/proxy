@@ -12,9 +12,6 @@ export class MyRoom extends Room {
   onJoin (client: Client, options: any) {
   }
 
-  onMessage (client: Client, message: any) {
-  }
-
   onLeave (client: Client, consented: boolean) {
   }
 
