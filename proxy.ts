@@ -131,10 +131,13 @@ server.on('error', (err) => {
   console.error(`Server error: ${err.stack}`);
 });
 
-server.on('upgrade', (req, socket, head) => {
+server.on('upgrade', (req: http.IncomingMessage, socket, head) => {
   const proxy = getProxy(req.url!);
 
   if (proxy) {
+    // forward original ip
+    req.headers['x-forwarded-for'] = req.connection.remoteAddress;
+
     proxy.ws(req, socket, head);
 
   } else {
