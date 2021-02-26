@@ -1,11 +1,11 @@
 {
   "name": "@colyseus/proxy",
-  "version": "0.12.4",
+  "version": "0.12.5",
   "description": "Proxy and Service Discovery for Colyseus",
   "main": "proxy.js",
   "scripts": {
     "test": "mocha --require ts-node/register test/*Test.ts",
-    "prepublish": "tsc"
+    "prepublishOnly": "tsc"
   },
   "bin": {
     "colyseus-proxy": "./bin/proxy"
@@ -36,7 +36,7 @@
     "@types/node": "^11.12.1",
     "mocha": "^6.0.2",
     "ts-node": "^8.6.2",
-    "typescript": "^3.7.5"
+    "typescript": "^4.2.2"
   },
   "dependencies": {
     "http-proxy": "^1.18.0",
