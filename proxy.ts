@@ -82,11 +82,14 @@ function register(node: Node) {
 
 function unregister(node: Node) {
   const proxy = processIds[node.processId];
+  const idx = proxies.indexOf(proxy);
 
-  proxies.splice(proxies.indexOf(proxy), 1);
-  delete processIds[node.processId];
-
-  currProxy = proxies.length - 1;
+  if(idx > -1) {
+    proxies.splice(proxies.indexOf(proxy), 1);
+    delete processIds[node.processId];
+  
+    currProxy = proxies.length - 1;
+  }
 }
 
 // listen for node additions and removals through Redis
