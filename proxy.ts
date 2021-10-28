@@ -67,11 +67,16 @@ function register(node: Node) {
     console.error(`Proxy error during: ${req.url}`);
     console.error(err.stack);
 
-    console.warn(`node ${node.processId}/${node.address} failed, unregistering`);
-    unregister(node);
-    cleanUpNode(node).then(() => console.log(`cleaned up ${node.processId} presence`));
+    const errMessageInLowerCase = err.message.toLowerCase();
+    if(!errMessageInLowerCase.includes("socket hang up") || !errMessageInLowerCase.includes("ECONNRESET")) {
+      console.warn(`node ${node.processId}/${node.address} failed, unregistering`);
+      unregister(node);
+      cleanUpNode(node).then(() => console.log(`cleaned up ${node.processId} presence`));
 
-    reqHandler(req, res); // try again!
+      reqHandler(req, res); // try again!
+    } else {
+      res.end();
+    }
   });
 
   processIds[node.processId] = proxy;
