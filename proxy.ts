@@ -73,7 +73,9 @@ function register(node: Node) {
       unregister(node);
       cleanUpNode(node).then(() => console.log(`cleaned up ${node.processId} presence`));
 
-      reqHandler(req, res); // try again!
+      if (res instanceof http.ServerResponse) {
+        reqHandler(req, res); // try again!
+      }
     } else {
       res.end();
     }
