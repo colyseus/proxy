@@ -68,12 +68,14 @@ function register(node: Node) {
     console.error(err.stack);
 
     const errorMessage = err.message.toLowerCase();
-    if(!errorMessage.includes("socket hang up") || !errorMessage.includes("ECONNRESET")) {
+    if(!errorMessage.includes("socket hang up") && !errorMessage.includes("ECONNRESET")) {
       console.warn(`node ${node.processId}/${node.address} failed, unregistering`);
       unregister(node);
       cleanUpNode(node).then(() => console.log(`cleaned up ${node.processId} presence`));
 
-      reqHandler(req, res); // try again!
+      if (res instanceof http.ServerResponse) {
+        reqHandler(req, res); // try again!
+      }
     } else {
       res.end();
     }
