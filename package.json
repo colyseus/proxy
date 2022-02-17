@@ -5,7 +5,7 @@
   "main": "proxy.js",
   "scripts": {
     "test": "jest",
-    "prepublishOnly": "tsc"
+    "prepare": "tsc"
   },
   "bin": {
     "colyseus-proxy": "./bin/proxy"
