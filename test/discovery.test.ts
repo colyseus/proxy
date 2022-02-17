@@ -4,7 +4,11 @@ import { cleanUpNode, getNodeList, listen } from "../discovery";
 jest.mock("ioredis", () => MockRedis);
 
 describe("discovery", () => {
-    const redis = new MockRedis("redis://127.0.0.1:6379");
+    const redis =
+        process.env.REDIS_CLUSTER === "true"
+            ? new MockRedis.Cluster(["redis://127.0.0.1:6379"])
+            : new MockRedis("redis://127.0.0.1:6379");
+
     afterEach(redis.flushall);
 
     it("gets node list", async () => {

@@ -1,19 +1,24 @@
 import Redis from "ioredis";
 
-const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+const REDIS_CLUSTER = process.env.REDIS_CLUSTER === "true";
+const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 const NODES_SET = "colyseus:nodes";
 const ROOM_COUNT_KEY = "roomcount";
 const DISCOVERY_CHANNEL = "colyseus:nodes:discovery";
 
-const redis = new Redis(REDIS_URL);
-const sub = new Redis(REDIS_URL);
+const redis = REDIS_CLUSTER
+    ? new Redis.Cluster([REDIS_URL])
+    : new Redis(REDIS_URL);
+const sub = REDIS_CLUSTER
+    ? new Redis.Cluster([REDIS_URL])
+    : new Redis(REDIS_URL);
 
 export interface Node {
     processId: string;
-    address?: string 
+    address?: string;
 }
 
-export type Action = 'add' | 'remove';
+export type Action = "add" | "remove";
 
 function parseNode(data: string): Node {
     const [processId, address] = data.split("/");
@@ -22,7 +27,7 @@ function parseNode(data: string): Node {
 
 export async function getNodeList(): Promise<Node[]> {
     const nodes: string[] = await redis.smembers(NODES_SET);
-    return nodes.map(data => parseNode(data));
+    return nodes.map((data) => parseNode(data));
 }
 
 export function listen(cb: (action: Action, node: Node) => void) {
