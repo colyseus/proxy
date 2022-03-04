@@ -116,7 +116,13 @@ getNodeList().
   catch(err => console.error(err));
 
 const reqHandler = (req: http.IncomingMessage, res: http.ServerResponse) => {
-  if (process.env.HEALTH_CHECK_PATH && req.url === process.env.HEALTH_CHECK_PATH) {
+  const healthCheckPath = process.env.HEALTH_CHECK_PATH;
+  if (
+    healthCheckPath &&
+    (req.url === healthCheckPath ||
+      (healthCheckPath[0] === "*" &&
+        req.url?.endsWith(healthCheckPath.slice(1))))
+  ) {
     res.statusCode = 200;
     res.end();
     return;
