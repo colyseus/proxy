@@ -11,7 +11,7 @@ const HTTP_PORT = Number(process.env.PORT || 80);
 const HTTP_IP = process.env.IP || '0.0.0.0';
 const SOCKET_TIMEOUT = Number(process.env.SOCKET_TIMEOUT || 30000); // 30 seconds default socket timeout
 
-const processIds: { [id: string]: httpProxy} = {}
+const processIds: { [id: string]: httpProxy } = {}
 
 let currProxy: number = 0;
 
@@ -91,8 +91,7 @@ function register(node: Node) {
   const client = new TcpClient(+port, host);
   clients.push(client)
   client.on("close",()=>{
-    console.warn(`node ${node.processId}/${node.address} failed, unregistering`);
-    console.debug("close", node,processIds)
+    console.warn(`node ${node.processId}/${node.address} close, unregistering`);
     unregister(node)
     cleanUpNode(node)
     clients.splice(clients.indexOf(client), 1);
