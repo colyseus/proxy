@@ -3,17 +3,20 @@ import http from "http";
 import https from "https";
 import httpProxy from "http-proxy";
 import { getNodeList, listen, Node, Action, cleanUpNode } from "./discovery";
+import { TcpClient } from "./socket";
+import { Console } from "console";
 
 const HTTPS_PORT = 443;
 const HTTP_PORT = Number(process.env.PORT || 80);
 const HTTP_IP = process.env.IP || '0.0.0.0';
 const SOCKET_TIMEOUT = Number(process.env.SOCKET_TIMEOUT || 30000); // 30 seconds default socket timeout
 
-const processIds: { [id: string]: httpProxy } = {}
+const processIds: { [id: string]: httpProxy} = {}
 
 let currProxy: number = 0;
-const proxies: httpProxy[] = [];
 
+const proxies: httpProxy[] = [];
+const clients: TcpClient[] = [];
 http.globalAgent = new http.Agent({ keepAlive: true });
 https.globalAgent = new https.Agent({ keepAlive: true });
 
@@ -85,6 +88,16 @@ function register(node: Node) {
   proxies.push(proxy);
 
   currProxy = proxies.length - 1;
+  const client = new TcpClient(+port, host);
+  clients.push(client)
+  client.on("close",()=>{
+    console.warn(`node ${node.processId}/${node.address} failed, unregistering`);
+    console.debug("close", node,processIds)
+    unregister(node)
+    cleanUpNode(node)
+    clients.splice(clients.indexOf(client), 1);
+  })        
+
 }
 
 function unregister(node: Node) {
@@ -94,7 +107,6 @@ function unregister(node: Node) {
   if(idx > -1) {
     proxies.splice(proxies.indexOf(proxy), 1);
     delete processIds[node.processId];
-
     currProxy = proxies.length - 1;
   }
 }

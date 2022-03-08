@@ -25,6 +25,7 @@ export async function getNodeList(): Promise<Node[]> {
     return nodes.map(data => parseNode(data));
 }
 
+
 export function listen(cb: (action: Action, node: Node) => void) {
     sub.subscribe(DISCOVERY_CHANNEL);
     sub.on("message", (_: string, message: any) => {
