@@ -3,9 +3,7 @@ name: Build docker and push to registry
 on:   
   push:
     # Publish `master` as Docker `latest` image.
-    branches:
-      - stable
-      - seed
+    branches: [ master ]
 
     # Publish `v1.2.3` tags as releases.
     tags:
