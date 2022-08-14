@@ -29,7 +29,6 @@ RUN chown -R node:node /app
 # Prepare runtime image
 FROM gcr.io/distroless/nodejs:18
 WORKDIR /app
-USER node
 COPY --from=builder /app .
 EXPOSE 8080
 EXPOSE 8443
