@@ -1,5 +1,5 @@
 # Stage 1: Build application
-FROM gcr.io/distroless/nodejs:18 as builder
+FROM node:18.6-alpine as builder
 
 # Create a directory to hold your service and relevant modules with owner being node and define the working directory of your Docker container.
 RUN mkdir -p /app/node_modules && chown -R node:node /app
@@ -22,12 +22,14 @@ RUN npm install
 # Copy our project into our working container and initiate build
 COPY --chown=node:node . .
 
+RUN mkdir -p /app/node_modules && chown -R node:node /app
+RUN chown -R node:node /app
+RUN chown -R node:node /app
+
 # Prepare runtime image
 FROM gcr.io/distroless/nodejs:18
 
-RUN mkdir -p /app/node_modules && chown -R node:node /app
 WORKDIR /app
-COPY package*.json ./
 RUN chown -R node:node /app
 
 USER node
