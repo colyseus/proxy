@@ -41,4 +41,4 @@ ENV SOCKET_TIMEOUT=
 ENV SSL_KEY=
 ENV SSL_CERT=
 
-CMD [ "node_modules/.bin/npx", "ts-node", "proxy.ts" ]
+CMD [ "node_modules/.bin/ts-node", "proxy.ts" ]
