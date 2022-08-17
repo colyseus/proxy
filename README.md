@@ -20,6 +20,7 @@ Edit your runtime environment to contain the following environment variables:
 
 - `PORT` is the port the proxy will be running on.
 - `REDIS_URL` is the path to the same Redis instance you're using on Colyseus' processes.
+- `REDIS_CLUSTER` set to `true` if running Redis in cluster mode.
 
 Once installed it can be run with
 
@@ -41,6 +42,7 @@ Edit your environment to contain the following environment variables:
 
 - `PORT` is the port the proxy will be running on.
 - `REDIS_URL` is the path to the same Redis instance you're using on Colyseus' processes.
+- `REDIS_CLUSTER` set to `true` if running Redis in cluster mode.
 
 Start the proxy server:
 

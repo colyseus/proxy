@@ -4,8 +4,8 @@
   "description": "Proxy and Service Discovery for Colyseus",
   "main": "proxy.js",
   "scripts": {
-    "test": "mocha --require ts-node/register test/*Test.ts",
-    "prepublishOnly": "tsc"
+    "test": "jest",
+    "prepare": "tsc"
   },
   "bin": {
     "colyseus-proxy": "./bin/proxy"
@@ -32,9 +32,12 @@
   "devDependencies": {
     "@types/http-proxy": "^1.17.3",
     "@types/ioredis": "^4.0.10",
-    "@types/mocha": "^5.2.6",
+    "@types/ioredis-mock": "^5.6.0",
+    "@types/jest": "^27.4.0",
     "@types/node": "^11.12.1",
-    "mocha": "^6.0.2",
+    "ioredis-mock": "^7.0.0",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.3",
     "ts-node": "^8.6.2",
     "typescript": "^4.2.2"
   },
