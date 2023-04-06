@@ -116,6 +116,18 @@ getNodeList().
   catch(err => console.error(err));
 
 const reqHandler = (req: http.IncomingMessage, res: http.ServerResponse) => {
+  const healthCheckPath = process.env.HEALTH_CHECK_PATH;
+  if (
+    healthCheckPath &&
+    (req.url === healthCheckPath ||
+      (healthCheckPath[0] === "*" &&
+        req.url?.endsWith(healthCheckPath.slice(1))))
+  ) {
+    res.writeHead(200, { 'Content-Type': 'text/plain'}); 
+    res.end('OK'); 
+    return;
+  }
+
   const proxy = getProxy(req.url!);
 
   if (proxy) {
