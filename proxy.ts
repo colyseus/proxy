@@ -135,7 +135,14 @@ const reqHandler = (req: http.IncomingMessage, res: http.ServerResponse) => {
   const proxy = getProxy(req.url!);
 
   if (proxy) {
-    proxy.web(req, res);
+    try {
+      proxy.web(req, res);
+    } catch (err) {
+      // e.g. a malformed URL makes http-proxy throw synchronously
+      console.error(`Invalid request: ${req.url}`);
+      res.statusCode = 400;
+      res.end();
+    }
 
   } else {
     console.error("No proxy available!", processIds);
@@ -164,7 +171,12 @@ server.on('upgrade', (req: http.IncomingMessage, socket, head) => {
     // forward original ip
     req.headers['x-forwarded-for'] = req.connection.remoteAddress;
 
-    proxy.ws(req, socket, head);
+    try {
+      proxy.ws(req, socket, head);
+    } catch (err) {
+      console.error(`Invalid upgrade request: ${req.url}`);
+      socket.destroy();
+    }
 
   } else {
     console.error("No proxy available!", processIds);
