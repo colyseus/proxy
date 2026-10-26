@@ -4,7 +4,7 @@
   "description": "Proxy and Service Discovery for Colyseus",
   "main": "proxy.js",
   "scripts": {
-    "test": "mocha --require ts-node/register test/*Test.ts",
+    "test": "mocha --exit --require ts-node/register test/*Test.ts",
     "prepublishOnly": "tsc"
   },
   "bin": {
